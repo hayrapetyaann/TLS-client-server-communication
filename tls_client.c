@@ -9,13 +9,14 @@
 
 #define PORT 4433
 #define SERVER_IP "127.0.0.1"
+#define BUFFER_SIZE 1024
 
 void handle_errors() {
     ERR_print_errors_fp(stderr);
     abort();
 }
 
-int main() {    
+int main() {
     struct sockaddr_in addr;
 
     SSL_library_init();
@@ -51,11 +52,20 @@ int main() {
     } else {
         printf("SSL connection established\n");
 
-        char buffer[1024];
-        int bytes = SSL_read(ssl, buffer, sizeof(buffer));
-        if (bytes > 0) {
-            buffer[bytes] = 0;
-            printf("Received: %s\n", buffer);
+        char buffer[BUFFER_SIZE];
+        while (1) {
+            printf("Enter message to send: ");
+            fgets(buffer, sizeof(buffer), stdin);
+            SSL_write(ssl, buffer, strlen(buffer));
+
+            int bytes = SSL_read(ssl, buffer, sizeof(buffer));
+            if (bytes > 0) {
+                buffer[bytes] = '\0'; 
+                printf("Received from server: %s\n", buffer);
+            } else {
+                printf("Server disconnected.\n");
+                break;
+            }
         }
     }
 
