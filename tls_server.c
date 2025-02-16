@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 
 #define PORT 4433
+#define BUFFER_SIZE 1024
 
 void handle_errors() {
     ERR_print_errors_fp(stderr);
@@ -22,10 +23,8 @@ int main() {
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
 
-
     const SSL_METHOD* method = TLS_server_method();
-    SSL_CTX* ctx  = SSL_CTX_new(method);
-
+    SSL_CTX* ctx = SSL_CTX_new(method);
     if (!ctx) {
         handle_errors();
     }
@@ -71,8 +70,18 @@ int main() {
         ERR_print_errors_fp(stderr);
     } else {
         printf("SSL connection established\n");
-        const char* msg = "Hello, secure world!";
-        SSL_write(ssl, msg, strlen(msg));
+
+        char buffer[BUFFER_SIZE];
+        while (1) {
+            int bytes = SSL_read(ssl, buffer, sizeof(buffer));
+            if (bytes > 0) {
+                buffer[bytes] = '\0'; 
+                printf("Received: %s\n", buffer);
+            }
+
+            const char *msg = "Hello, secure world!";
+            SSL_write(ssl, msg, strlen(msg));
+        }
     }
 
     SSL_free(ssl);
