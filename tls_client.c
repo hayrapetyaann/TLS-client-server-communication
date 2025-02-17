@@ -6,6 +6,7 @@
 #include <openssl/err.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 
 #define PORT 4433
 #define SERVER_IP "127.0.0.1"
@@ -56,6 +57,9 @@ int main() {
         while (1) {
             printf("Enter message to send: ");
             fgets(buffer, sizeof(buffer), stdin);
+            if (strncmp(buffer, "exit", 4) == 0) {
+                break;
+            }
             SSL_write(ssl, buffer, strlen(buffer));
 
             int bytes = SSL_read(ssl, buffer, sizeof(buffer));
