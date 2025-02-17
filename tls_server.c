@@ -77,10 +77,17 @@ int main() {
             if (bytes > 0) {
                 buffer[bytes] = '\0'; 
                 printf("Received: %s\n", buffer);
+                if (strncmp(buffer, "exit", 4) == 0) {
+                    break;
+                }
             }
 
-            const char *msg = "Hello, secure world!";
-            SSL_write(ssl, msg, strlen(msg));
+            printf("Enter message to send: ");
+            fgets(buffer, sizeof(buffer), stdin);
+            if (strncmp(buffer, "exit", 4) == 0) {
+                break;
+            }
+            SSL_write(ssl, buffer, strlen(buffer));
         }
     }
 
@@ -90,3 +97,4 @@ int main() {
     SSL_CTX_free(ctx);
     return 0;
 }
+
